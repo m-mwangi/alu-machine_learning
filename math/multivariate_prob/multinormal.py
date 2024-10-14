@@ -1,47 +1,75 @@
 #!/usr/bin/env python3
+"""
+Defines class MultiNormal that represents a Multivariate Normal Distribution
+"""
+
+
 import numpy as np
 
+
 class MultiNormal:
+    """
+    Class that represents Multivariate Normal Distribution
+
+    class constructor:
+        def __init__(self, data)
+
+    public instance variables:
+        mean [numpy.ndarray of shape (d, 1)]:
+            contains the mean of data
+        cov [numpy.ndarray of shape (d, d)]:
+            contains the covariance matrix of data
+
+    public instance method:
+        def pdf(self, x):
+            calculates the PDF at a data point
+    """
     def __init__(self, data):
-        # Ensure data is a 2D numpy array
-        if not isinstance(data, np.ndarray) or len(data.shape) != 2:
+        """
+        Class constructor
+
+        parameters:
+            data [numpy.ndarray of shape (d, n)]:
+                contains the data set
+                d: number of dimensions in each data point
+                n: number of data points
+        """
+        if type(data) is not np.ndarray or len(data.shape) != 2:
             raise TypeError("data must be a 2D numpy.ndarray")
-        
         d, n = data.shape
-        
-        # Ensure there are multiple data points
         if n < 2:
             raise ValueError("data must contain multiple data points")
-        
-        # Calculate the mean
-        self.mean = np.mean(data, axis=1, keepdims=True)
-        
-        # Calculate the covariance matrix without using np.cov
-        centered_data = data - self.mean
-        self.cov = (centered_data @ centered_data.T) / (n - 1)
+        mean = np.mean(data, axis=1, keepdims=True)
+        self.mean = mean
+        cov = np.matmul(data - mean, data.T - mean.T) / (n - 1)
+        self.cov = cov
 
     def pdf(self, x):
-        """Calculates the PDF at a data point."""
-        # Check if x is a numpy array
-        if not isinstance(x, np.ndarray):
+        """
+        Calculates the PDF at a data point
+
+        parameters:
+            x [numpy.ndarray of shape (d, 1)]:
+                contains the data point whose PDF should be calculated
+                d: number of dimensions of the instance
+
+        returns:
+            value of the PDF
+        """
+        if type(x) is not np.ndarray:
             raise TypeError("x must be a numpy.ndarray")
-        
-        d, _ = self.mean.shape
-        
-        # Check if x has the correct shape
-        if x.shape != (d, 1):
-            raise ValueError(f"x must have the shape ({d}, 1)")
-        
-        # Constants for the PDF calculation
-        cov_inv = np.linalg.inv(self.cov)
-        det_cov = np.linalg.det(self.cov)
-        norm_factor = 1 / np.sqrt((2 * np.pi) ** d * det_cov)
-        
-        # Compute the PDF
-        diff = x - self.mean
-        exponent = -0.5 * (diff.T @ cov_inv @ diff)
-        pdf_value = norm_factor * np.exp(exponent)
-        
-        return float(pdf_value)
+        d = self.cov.shape[0]
+        if len(x.shape) != 2:
+            raise ValueError("x must have the shape ({}, 1)".format(d))
+        test_d, one = x.shape
+        if test_d != d or one != 1:
+            raise ValueError("x must have the shape ({}, 1)".format(d))
+        det = np.linalg.det(self.cov)
+        inv = np.linalg.inv(self.cov)
+        pdf = 1.0 / np.sqrt(((2 * np.pi) ** d) * det)
+        mult = np.matmul(np.matmul((x - self.mean).T, inv), (x - self.mean))
+        pdf *= np.exp(-0.5 * mult)
+        pdf = pdf[0][0]
+        return pdf
 
 
