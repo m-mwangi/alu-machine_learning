@@ -30,3 +30,4 @@ def availableShips(passengerCount):
             break
 
     return output
+    
