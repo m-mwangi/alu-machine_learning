@@ -6,6 +6,7 @@ that can hold a given number of passengers
 
 import requests
 
+
 def availableShips(passengerCount):
     """Returns a list of ships"""
     url = 'https://swapi-api.alx-tools.com/api/starships/'
