@@ -1,40 +1,37 @@
 #!/usr/bin/env python3
-
 """
-This module contains a function that
-uses Github API to print location of
-specific users"""
+Uses the GitHub API to print the location of a specific user,
+where user is passed as first argument of the script with full API URL
+
+ex) "./2-user_location.py https://api.github.com/users/holbertonschool"
+"""
+
 
 import requests
-import sys
-import time
-
-# get the url from string passed on the terminal
-
-# If the user doesn’t exist, print Not found
-# If the status code is 403, print Reset in X min
-# where X is the number of minutes from now and the value of X-Ratelimit-Reset
-# Your code should not be executed when the file is imported
-# (you should use if __name__ == '__main__':)
-
-
-def print_location():
-    """print location of user"""
-    url = sys.argv[1]
-    response = requests.get(url)
-    data = response.json()
-
-    if response.status_code == 403:
-        rate_limit = int(response.headers.get('X-Ratelimit-Reset'))
-        current_time = int(time.time())
-        diff = (rate_limit - current_time) // 60
-        print("Reset in {} min".format(diff))
-
-    elif response.status_code == 404:
-        print("Not found")
-    elif response.status_code == 200:
-        print(data['location'])
+from sys import argv
+from time import time
 
 
 if __name__ == "__main__":
-    print_location()
+    if len(argv) < 2:
+        raise TypeError(
+            "Input must have the full API URL passed in as an argument: {}{}".
+            format('ex. "./2-user_location.py',
+                   'https://api.github.com/users/holbertonschool"'))
+    try:
+        url = argv[1]
+        results = requests.get(url)
+        if results.status_code == 403:
+            reset = results.headers.get('X-Ratelimit-Reset')
+            waitTime = int(reset) - time()
+            minutes = round(waitTime / 60)
+            print('Reset in {} min'.format(minutes))
+        else:
+            results = results.json()
+            location = results.get('location')
+            if location:
+                print(location)
+            else:
+                print('Not found')
+    except Exception as err:
+        print('Not found')
