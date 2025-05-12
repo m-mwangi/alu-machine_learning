@@ -118,4 +118,3 @@ class NST:
         outputs.append(vgg.get_layer(self.content_layer).output)
 
         self.model = tf.keras.models.Model(inputs=vgg.input, outputs=outputs)
-        
